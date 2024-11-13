@@ -142,10 +142,7 @@ OTRGlobals::OTRGlobals() {
             }
         }
     }
-    std::unordered_set<uint32_t> ValidHashes = { OOT_PAL_MQ,     OOT_NTSC_JP_MQ,    OOT_NTSC_US_MQ, OOT_PAL_GC_MQ_DBG,
-                                                 OOT_NTSC_US_10, OOT_NTSC_US_11,    OOT_NTSC_US_12, OOT_PAL_10,
-                                                 OOT_PAL_11,     OOT_NTSC_JP_GC_CE, OOT_NTSC_JP_GC, OOT_NTSC_US_GC,
-                                                 OOT_PAL_GC,     OOT_PAL_GC_DBG1,   OOT_PAL_GC_DBG2 };
+    std::unordered_set<uint32_t> ValidHashes = { MM_NTSC_US_10, MM_NTSC_US_GC, MM_NTSC_JP_GC };
     // tell LUS to reserve 3 SoH specific threads (Game, Audio, Save)
     context =
         Ship::Context::CreateInstance("2 Ship 2 Harkinian", appShortName, "2ship2harkinian.json", archiveFiles, {}, 3);
@@ -796,22 +793,8 @@ extern "C" uint32_t ResourceMgr_GetGamePlatform(int index) {
         Ship::Context::GetInstance()->GetResourceManager()->GetArchiveManager()->GetGameVersions()[index];
 
     switch (version) {
-        case OOT_NTSC_US_10:
-        case OOT_NTSC_US_11:
-        case OOT_NTSC_US_12:
-        case OOT_PAL_10:
-        case OOT_PAL_11:
         case MM_NTSC_US_10:
             return GAME_PLATFORM_N64;
-        case OOT_NTSC_JP_GC:
-        case OOT_NTSC_US_GC:
-        case OOT_PAL_GC:
-        case OOT_NTSC_JP_MQ:
-        case OOT_NTSC_US_MQ:
-        case OOT_PAL_MQ:
-        case OOT_PAL_GC_DBG1:
-        case OOT_PAL_GC_DBG2:
-        case OOT_PAL_GC_MQ_DBG:
         case MM_NTSC_US_GC:
         case MM_NTSC_JP_GC:
             return GAME_PLATFORM_GC;
@@ -823,25 +806,10 @@ extern "C" uint32_t ResourceMgr_GetGameRegion(int index) {
         Ship::Context::GetInstance()->GetResourceManager()->GetArchiveManager()->GetGameVersions()[index];
 
     switch (version) {
-        case OOT_NTSC_US_10:
-        case OOT_NTSC_US_11:
-        case OOT_NTSC_US_12:
-        case OOT_NTSC_JP_GC:
-        case OOT_NTSC_US_GC:
-        case OOT_NTSC_JP_MQ:
-        case OOT_NTSC_US_MQ:
         case MM_NTSC_US_10:
         case MM_NTSC_US_GC:
         case MM_NTSC_JP_GC:
             return GAME_REGION_NTSC;
-        case OOT_PAL_10:
-        case OOT_PAL_11:
-        case OOT_PAL_GC:
-        case OOT_PAL_MQ:
-        case OOT_PAL_GC_DBG1:
-        case OOT_PAL_GC_DBG2:
-        case OOT_PAL_GC_MQ_DBG:
-            return GAME_REGION_PAL;
     }
 }
 
@@ -850,21 +818,7 @@ extern "C" uint32_t ResourceMgr_GetGameDefaultLanguage(int index) {
         Ship::Context::GetInstance()->GetResourceManager()->GetArchiveManager()->GetGameVersions()[index];
 
     switch (version) {
-        case OOT_NTSC_US_10:
-        case OOT_NTSC_US_11:
-        case OOT_NTSC_US_12:
-        case OOT_PAL_10:
-        case OOT_PAL_11:
         case MM_NTSC_US_10:
-        case OOT_NTSC_JP_GC:
-        case OOT_NTSC_US_GC:
-        case OOT_PAL_GC:
-        case OOT_NTSC_JP_MQ:
-        case OOT_NTSC_US_MQ:
-        case OOT_PAL_MQ:
-        case OOT_PAL_GC_DBG1:
-        case OOT_PAL_GC_DBG2:
-        case OOT_PAL_GC_MQ_DBG:
         case MM_NTSC_US_GC:
             return LANGUAGE_ENG;
         case MM_NTSC_JP_GC:
