@@ -6,7 +6,7 @@
 #include "interface/parameter_static/parameter_static.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
 #include "BenPort.h"
-#include "2s2h/Enhancements/GameInteractor/GameInteractor.h"
+#include "2s2h/GameInteractor/GameInteractor.h"
 #include "assets/archives/schedule_dma_static/schedule_dma_static_yar.h"
 #include "assets/archives/icon_item_static/icon_item_static_yar.h"
 #include "assets/archives/icon_item_24_static/icon_item_24_static_yar.h"
@@ -4843,7 +4843,7 @@ void Message_DrawMain(PlayState* play, Gfx** gfxP) {
                         AudioOcarina_SetOcarinaDisableTimer(0, 20);
                         Message_CloseTextbox(play);
                         play->msgCtx.ocarinaMode = OCARINA_MODE_PLAYED_FULL_EVAN_SONG;
-                    } else if (GameInteractor_Should(GI_VB_SONG_AVAILABLE_TO_PLAY, vanillaOwnedSongCheck,
+                    } else if (GameInteractor_Should(VB_SONG_AVAILABLE_TO_PLAY, vanillaOwnedSongCheck,
                                                      &msgCtx->ocarinaStaff->state)) {
                         sLastPlayedSong = msgCtx->ocarinaStaff->state;
                         msgCtx->lastPlayedSong = msgCtx->ocarinaStaff->state;
@@ -5075,12 +5075,14 @@ void Message_DrawMain(PlayState* play, Gfx** gfxP) {
 
                     if (msgCtx->ocarinaAction == OCARINA_ACTION_FREE_PLAY_DONE) {
                         if (sLastPlayedSong == OCARINA_SONG_ELEGY) {
-                            if ((play->sceneId == SCENE_F40) || (play->sceneId == SCENE_F41) ||
-                                (play->sceneId == SCENE_IKANAMAE) || (play->sceneId == SCENE_CASTLE) ||
-                                (play->sceneId == SCENE_IKNINSIDE) || (play->sceneId == SCENE_IKANA) ||
-                                (play->sceneId == SCENE_INISIE_N) || (play->sceneId == SCENE_INISIE_R) ||
-                                (play->sceneId == SCENE_INISIE_BS) || (play->sceneId == SCENE_RANDOM) ||
-                                (play->sceneId == SCENE_REDEAD) || (play->sceneId == SCENE_TOUGITES)) {
+                            if (GameInteractor_Should(
+                                    VB_ELEGY_CHECK_SCENE,
+                                    (play->sceneId == SCENE_F40) || (play->sceneId == SCENE_F41) ||
+                                        (play->sceneId == SCENE_IKANAMAE) || (play->sceneId == SCENE_CASTLE) ||
+                                        (play->sceneId == SCENE_IKNINSIDE) || (play->sceneId == SCENE_IKANA) ||
+                                        (play->sceneId == SCENE_INISIE_N) || (play->sceneId == SCENE_INISIE_R) ||
+                                        (play->sceneId == SCENE_INISIE_BS) || (play->sceneId == SCENE_RANDOM) ||
+                                        (play->sceneId == SCENE_REDEAD) || (play->sceneId == SCENE_TOUGITES))) {
                                 play->msgCtx.ocarinaMode = OCARINA_MODE_EVENT;
                             } else {
                                 sLastPlayedSong = 0xFF;
@@ -5905,12 +5907,7 @@ void Message_Update(PlayState* play) {
 
         case MSGMODE_TEXT_DISPLAYING:
             if (msgCtx->textBoxType != TEXTBOX_TYPE_4) {
-                if ((CHECK_BTN_ALL(input->press.button, BTN_B) ||
-                     // 2S2H [Enhancement] When fast text is on, we want to check if B is held instead of only if it was
-                     // just pressed
-                     (CVarGetInteger("gEnhancements.Dialogue.FastText", 0) &&
-                      CHECK_BTN_ALL(input->cur.button, BTN_B))) &&
-                    !msgCtx->textUnskippable) {
+                if (CHECK_BTN_ALL(input->press.button, BTN_B) && !msgCtx->textUnskippable) {
                     msgCtx->textboxSkipped = true;
                     msgCtx->textDrawPos = msgCtx->decodedTextLen;
                 } else if (CHECK_BTN_ALL(input->press.button, BTN_A) && !msgCtx->textUnskippable) {
@@ -5924,6 +5921,14 @@ void Message_Update(PlayState* play) {
                         }
                         msgCtx->textDrawPos++;
                     }
+                    // 2S2H [Enhancement] When fast text is on, we want to check if B is held instead of only if it was
+                    // just pressed. Has an additional check that the textbox hasnt been skipped already to prevent the
+                    // message from failing to continue.
+                } else if ((CVarGetInteger("gEnhancements.Dialogue.FastText", 0) &&
+                            CHECK_BTN_ALL(input->cur.button, BTN_B)) &&
+                           !msgCtx->textUnskippable && !msgCtx->textboxSkipped) {
+                    msgCtx->textboxSkipped = true;
+                    msgCtx->textDrawPos = msgCtx->decodedTextLen;
                 }
             } else if (CHECK_BTN_ALL(input->press.button, BTN_A) && (msgCtx->textUnskippable == 0)) {
                 while (true) {
