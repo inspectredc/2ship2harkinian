@@ -178,3 +178,45 @@ static const ALIGN_ASSET(2) char gBoxChestLockSmallKeyTex[] = dgBoxChestLockSmal
 
 #define dgBoxChestLockStrayFairyTex "__OTR__objects/object_box/gBoxChestLockStrayFairyTex"
 static const ALIGN_ASSET(2) char gBoxChestLockStrayFairyTex[] = dgBoxChestLockStrayFairyTex;
+
+#define dgPotBossKeyDL "__OTR__objects/object_tsubo/gPotBossKeyDL"
+static const ALIGN_ASSET(2) char gPotBossKeyDL[] = dgPotBossKeyDL;
+
+#define dgPotFairyDL "__OTR__objects/object_tsubo/gPotFairyDL"
+static const ALIGN_ASSET(2) char gPotFairyDL[] = dgPotFairyDL;
+
+#define dgPotHeartDL "__OTR__objects/object_tsubo/gPotHeartDL"
+static const ALIGN_ASSET(2) char gPotHeartDL[] = dgPotHeartDL;
+
+#define dgPotMajorDL "__OTR__objects/object_tsubo/gPotMajorDL"
+static const ALIGN_ASSET(2) char gPotMajorDL[] = dgPotMajorDL;
+
+#define dgPotMaskDL "__OTR__objects/object_tsubo/gPotMaskDL"
+static const ALIGN_ASSET(2) char gPotMaskDL[] = dgPotMaskDL;
+
+#define dgPotMinorDL "__OTR__objects/object_tsubo/gPotMinorDL"
+static const ALIGN_ASSET(2) char gPotMinorDL[] = dgPotMinorDL;
+
+#define dgPotRandomDL "__OTR__objects/object_tsubo/gPotRandomDL"
+static const ALIGN_ASSET(2) char gPotRandomDL[] = dgPotRandomDL;
+
+#define dgPotSmallKeyDL "__OTR__objects/object_tsubo/gPotSmallKeyDL"
+static const ALIGN_ASSET(2) char gPotSmallKeyDL[] = dgPotSmallKeyDL;
+
+#define dgPotStandardDL "__OTR__objects/object_tsubo/gPotStandardDL"
+static const ALIGN_ASSET(2) char gPotStandardDL[] = dgPotStandardDL;
+
+#define dgPotTokenDL "__OTR__objects/object_tsubo/gPotTokenDL"
+static const ALIGN_ASSET(2) char gPotTokenDL[] = dgPotTokenDL;
+
+#define dgChestTrackerIcon "__OTR__textures/icons/gChestTrackerIcon"
+static const ALIGN_ASSET(2) char gChestTrackerIcon[] = dgChestTrackerIcon;
+
+#define dgPotTrackerIcon "__OTR__textures/icons/gPotTrackerIcon"
+static const ALIGN_ASSET(2) char gPotTrackerIcon[] = dgPotTrackerIcon;
+
+#define dgCrateTrackerIcon "__OTR__textures/icons/gCrateTrackerIcon"
+static const ALIGN_ASSET(2) char gCrateTrackerIcon[] = dgCrateTrackerIcon;
+
+#define dgBarrelTrackerIcon "__OTR__textures/icons/gBarrelTrackerIcon"
+static const ALIGN_ASSET(2) char gBarrelTrackerIcon[] = dgBarrelTrackerIcon;

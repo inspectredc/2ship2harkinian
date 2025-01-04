@@ -30,6 +30,7 @@ void Rando::MiscBehavior::InitOfferGetItemBehavior() {
                     [[fallthrough]];
                 case ACTOR_EN_BJT:
                 case ACTOR_EN_NB:
+                case ACTOR_EN_PM:
                 case ACTOR_EN_AL:
                     func_80832558(gPlayState, player, func_80837B60);
                     *should = false;
@@ -58,11 +59,13 @@ void Rando::MiscBehavior::InitOfferGetItemBehavior() {
             case ACTOR_EN_DT:
                 actor->textId = 0x2AD1;
                 [[fallthrough]];
-            case ACTOR_EN_GK:
+            case ACTOR_EN_DNO:
+            case ACTOR_EN_INVADEPOH:
             case ACTOR_EN_JS:
             case ACTOR_EN_KENDO_JS:
             case ACTOR_EN_GURUGURU:
             case ACTOR_EN_HS:
+            case ACTOR_EN_STH:
                 *should = false;
                 actor->parent = &player->actor;
                 player->talkActor = actor;

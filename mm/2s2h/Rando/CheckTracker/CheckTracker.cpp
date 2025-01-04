@@ -8,6 +8,7 @@
 #include <cstring>
 
 // Image Icons
+#include "assets/2s2h_assets.h"
 #include "interface/parameter_static/parameter_static.h"
 #include "assets/archives/icon_item_static/icon_item_static_yar.h"
 #include "assets/interface/icon_item_dungeon_static/icon_item_dungeon_static.h"
@@ -49,18 +50,21 @@ static ImGuiTextFilter sCheckTrackerFilter;
 std::map<SceneId, std::vector<RandoCheckId>> sceneChecks;
 std::vector<SceneId> sortedSceneIds;
 std::unordered_map<RandoCheckId, std::string> readableCheckNames;
+std::unordered_map<RandoCheckId, std::string> accessLogicFuncs;
 
 std::vector<const char*> checkTypeIconList = {
     /*RCTYPE_UNKNOWN*/ gItemIconBombersNotebookTex,
-    /*RCTYPE_CHEST*/ gItemIconBombersNotebookTex,
+    /*RCTYPE_BARREL*/ gBarrelTrackerIcon,
+    /*RCTYPE_CHEST*/ gChestTrackerIcon,
     /*RCTYPE_COW*/ gItemIconRomaniMaskTex,
-    /*RCTYPE_FREESTANDING*/ gItemIconBombersNotebookTex,
-    /*RCTYPE_MINIGAME*/ gItemIconBombersNotebookTex,
+    /*RCTYPE_CRATE*/ gCrateTrackerIcon,
+    /*RCTYPE_FREESTANDING*/ gRupeeCounterIconTex,
+    /*RCTYPE_MINIGAME*/ gArcheryScoreIconTex,
     /*RCTYPE_NPC*/ gItemIconBombersNotebookTex,
     /*RCTYPE_OWL*/ gWorldMapOwlFaceTex,
-    /*RCTYPE_POT*/ gItemIconBombersNotebookTex,
+    /*RCTYPE_POT*/ gPotTrackerIcon,
     /*RCTYPE_RUPEE*/ gRupeeCounterIconTex,
-    /*RCTYPE_SHOP*/ gRupeeCounterIconTex,
+    /*RCTYPE_SHOP*/ gItemIconAdultsWalletTex,
     /*RCTYPE_SKULL_TOKEN*/ gQuestIconGoldSkulltulaTex,
     /*RCTYPE_SONG*/ gItemIconSongNoteTex,
     /*RCTYPE_STRAY_FAIRY*/ gStrayFairyGreatBayIconTex,
@@ -102,7 +106,8 @@ void DrawCheckTypeIcon(RandoCheckId randoCheckId) {
                  : checkType == RCTYPE_OWL ? ImVec2(18.0f, 11.0f)
                                            : ImVec2(18.0f, 18.0f),
                  ImVec2(0, 0), ImVec2(1, 1),
-                 checkType == RCTYPE_SHOP ? ImVec4(0.78f, 1, 0.39f, 1) : ImVec4(1, 1, 1, 1));
+                 checkType == RCTYPE_FREESTANDING || checkType == RCTYPE_RUPEE ? ImVec4(0.78f, 1, 0.39f, 1)
+                                                                               : ImVec4(1, 1, 1, 1));
 }
 
 void initializeSceneChecks() {
@@ -152,7 +157,7 @@ void CheckTrackerDrawLogicalList() {
     for (RandoRegionId regionId : sortedRegionIds) {
         if (CVAR_SCROLL_TO_SCENE && sScrollToTargetEntrance != -1 &&
             Rando::Logic::GetRegionIdFromEntrance(sScrollToTargetEntrance) == regionId) {
-            ImGui::SetScrollHereY();
+            ImGui::SetScrollHereY(0.0f);
             sScrollToTargetScene = -1;
             sScrollToTargetEntrance = -1;
         }
@@ -276,7 +281,40 @@ void CheckTrackerDrawLogicalList() {
     }
 }
 
+std::unordered_map<RandoCheckId, bool> checksInLogic;
+static u32 lastFrame = 0;
+
+void RefreshChecksInLogic() {
+    if (gGameState == NULL || gGameState->frames - lastFrame < 20 || !CVAR_SHOW_LOGIC) {
+        return;
+    }
+
+    lastFrame = gGameState->frames;
+    checksInLogic.clear();
+
+    std::set<RandoRegionId> reachableRegions = {};
+    // Get connected entrances from starting & warp points
+    Rando::Logic::FindReachableRegions(RR_MAX, reachableRegions);
+    // Get connected regions from current entrance (TODO: Make this optional)
+    Rando::Logic::FindReachableRegions(Rando::Logic::GetRegionIdFromEntrance(gSaveContext.save.entrance),
+                                       reachableRegions);
+    for (RandoRegionId regionId : reachableRegions) {
+        auto& randoRegion = Rando::Logic::Regions[regionId];
+        std::vector<std::pair<RandoCheckId, std::string>> availableChecks;
+
+        for (auto& [randoCheckId, accessLogicFunc] : randoRegion.checks) {
+            auto& randoStaticCheck = Rando::StaticData::Checks[randoCheckId];
+            auto& randoSaveCheck = RANDO_SAVE_CHECKS[randoCheckId];
+            if (randoSaveCheck.shuffled && !randoSaveCheck.obtained && accessLogicFunc.first()) {
+                checksInLogic.insert({ randoCheckId, true });
+            }
+        }
+    }
+}
+
 void CheckTrackerDrawNonLogicalList() {
+    RefreshChecksInLogic();
+
     for (auto& sceneId : sortedSceneIds) {
         if (sceneId == SCENE_MAX) {
             continue;
@@ -310,7 +348,7 @@ void CheckTrackerDrawNonLogicalList() {
         }
 
         if (CVAR_SCROLL_TO_SCENE && sScrollToTargetScene != -1 && sScrollToTargetScene == sceneId) {
-            ImGui::SetScrollHereY();
+            ImGui::SetScrollHereY(0.0f);
             sScrollToTargetScene = -1;
             sScrollToTargetEntrance = -1;
         }
@@ -336,11 +374,17 @@ void CheckTrackerDrawNonLogicalList() {
                 for (auto& randoCheckId : checks) {
                     Rando::StaticData::RandoStaticCheck& randoStaticCheck = Rando::StaticData::Checks[randoCheckId];
                     RandoSaveCheck& randoSaveCheck = RANDO_SAVE_CHECKS[randoCheckId];
-                    ImGui::PushStyleColor(ImGuiCol_Text, randoSaveCheck.obtained  ? UIWidgets::Colors::LightGreen
-                                                         : randoSaveCheck.skipped ? UIWidgets::Colors::Indigo
-                                                                                  : UIWidgets::Colors::White);
+                    ImVec4 textColor = UIWidgets::Colors::White;
+                    if (randoSaveCheck.obtained) {
+                        textColor = UIWidgets::Colors::LightGreen;
+                    } else if (randoSaveCheck.skipped) {
+                        textColor = UIWidgets::Colors::Indigo;
+                    } else if (CVAR_SHOW_LOGIC && !checksInLogic.contains(randoCheckId)) {
+                        textColor = UIWidgets::Colors::Gray;
+                    }
 
                     if (checkTrackerShouldShowRow(randoSaveCheck.obtained, randoSaveCheck.skipped)) {
+                        ImGui::PushStyleColor(ImGuiCol_Text, textColor);
                         ImGui::BeginGroup();
                         float cursorPosY = ImGui::GetCursorPosY();
                         if (Rando::StaticData::Checks[randoCheckId].randoCheckType == RCTYPE_OWL) {
@@ -361,6 +405,13 @@ void CheckTrackerDrawNonLogicalList() {
                         ImGui::SameLine();
                         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 0));
                         ImGui::EndGroup();
+                        ImGui::PopStyleColor();
+                        std::string accessLogicString = accessLogicFuncs.find(randoCheckId) != accessLogicFuncs.end()
+                                                            ? accessLogicFuncs[randoCheckId]
+                                                            : "";
+                        if (accessLogicString != "") {
+                            UIWidgets::Tooltip(accessLogicString.c_str());
+                        }
                         ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::IsItemHovered()
                                                                               ? IM_COL32(255, 255, 0, 128)
                                                                               : IM_COL32(255, 255, 255, 0));
@@ -369,7 +420,6 @@ void CheckTrackerDrawNonLogicalList() {
                         }
                         ImGui::TableNextColumn();
                     }
-                    ImGui::PopStyleColor();
                 }
                 ImGui::EndTable();
             }
@@ -403,18 +453,18 @@ void Window::DrawElement() {
     ImGui::Text("Total: %s", totalChecksFound().c_str());
 
     ImGui::BeginChild("Checks", ImVec2(0, 0));
-    if (CVAR_SHOW_LOGIC) {
-        CheckTrackerDrawLogicalList();
-    } else {
-        CheckTrackerDrawNonLogicalList();
-    }
+    // if (CVAR_SHOW_LOGIC) {
+    //     CheckTrackerDrawLogicalList();
+    // } else {
+    CheckTrackerDrawNonLogicalList();
+    // }
     sExpandedHeadersState = sExpandedHeadersToggle;
     ImGui::EndChild();
 }
 
 void SettingsWindow::DrawElement() {
     ImGui::SeparatorText("Check Tracker Settings");
-    UIWidgets::CVarCheckbox("Only Show Checks In Logic", CVAR_NAME_SHOW_LOGIC);
+    UIWidgets::CVarCheckbox("Dim Out of Logic Checks", CVAR_NAME_SHOW_LOGIC);
     UIWidgets::CVarCheckbox("Hide Collected Checks", CVAR_NAME_HIDE_COLLECTED);
     UIWidgets::CVarCheckbox("Hide Skipped Checks", CVAR_NAME_HIDE_SKIPPED);
     UIWidgets::CVarCheckbox("Auto Scroll To Current Scene", CVAR_NAME_SCROLL_TO_SCENE);
@@ -426,6 +476,11 @@ void SettingsWindow::DrawElement() {
 void Init() {
     for (auto& [randoCheckId, randoStaticCheck] : Rando::StaticData::Checks) {
         readableCheckNames[randoCheckId] = convertEnumToReadableName(randoStaticCheck.name);
+    }
+    for (auto& [randoRegionId, randoRegion] : Rando::Logic::Regions) {
+        for (auto& [randoCheckId, accessLogicFunc] : randoRegion.checks) {
+            accessLogicFuncs[randoCheckId] = accessLogicFunc.second;
+        }
     }
     GameInteractor::Instance->RegisterGameHook<GameInteractor::OnSceneInit>([](s8 sceneId, s8 spawnNum) {
         if (CVAR_SCROLL_TO_SCENE) {

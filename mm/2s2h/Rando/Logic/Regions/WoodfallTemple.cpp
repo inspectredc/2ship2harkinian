@@ -26,6 +26,10 @@ static RegisterShipInitFunc initFunc([]() {
             // TODO: CAN_KILL_BOSS(Odolwa)?
             CHECK(RC_WOODFALL_TEMPLE_BOSS_CONTAINER, true),
             CHECK(RC_WOODFALL_TEMPLE_BOSS_WARP, true),
+            CHECK(RC_GIANTS_CHAMBER_OATH, true),
+        },
+        .exits = { //     TO                                         FROM
+            EXIT(ENTRANCE(WOODFALL_TEMPLE, 1),                       ONE_WAY_EXIT, true),
         },
         .events = {
             // TODO: CAN_KILL_BOSS(Odolwa)?
@@ -61,6 +65,17 @@ static RegisterShipInitFunc initFunc([]() {
         .connections = {
             CONNECTION(RR_WOODFALL_TEMPLE_MAIN_ROOM_UPPER, CAN_BE_DEKU && CAN_LIGHT_TORCH_NEAR_ANOTHER),
             CONNECTION(RR_WOODFALL_TEMPLE_MAZE_ROOM, CAN_LIGHT_TORCH_NEAR_ANOTHER),
+        },
+    };
+    Regions[RR_WOODFALL_TEMPLE_DEKU_PRINCESS_ROOM] = RandoRegion{ .name = "Deku Princess Room", .sceneId = SCENE_MITURIN,
+        .exits = { //     TO                                         FROM
+            EXIT(ENTRANCE(WOODFALL, 3),                     ENTRANCE(WOODFALL_TEMPLE, 2), true),
+        },
+        .events = {
+            EVENT_ACCESS(RANDO_ACCESS_DEKU_PRINCESS, true),
+        },
+        .oneWayEntrances = {
+            ENTRANCE(WOODFALL_TEMPLE, 1), // From boss room
         },
     };
     Regions[RR_WOODFALL_TEMPLE_ENTRANCE] = RandoRegion{ .name = "Entrance", .sceneId = SCENE_MITURIN,
@@ -154,6 +169,12 @@ static RegisterShipInitFunc initFunc([]() {
             CHECK(RC_WOODFALL_TEMPLE_POT_PRE_BOSS_1, CAN_BE_DEKU && HAS_ITEM(ITEM_BOW)),
             CHECK(RC_WOODFALL_TEMPLE_POT_PRE_BOSS_2, CAN_BE_DEKU && HAS_ITEM(ITEM_BOW)),
             CHECK(RC_WOODFALL_TEMPLE_SF_PRE_BOSS_PILLAR, CAN_BE_DEKU && HAS_ITEM(ITEM_BOW)),
+            CHECK(RC_WOODFALL_TEMPLE_PRE_BOSS_FREESTANDING_RUPEE_01, CAN_BE_DEKU),
+            CHECK(RC_WOODFALL_TEMPLE_PRE_BOSS_FREESTANDING_RUPEE_02, CAN_BE_DEKU),
+            CHECK(RC_WOODFALL_TEMPLE_PRE_BOSS_FREESTANDING_RUPEE_03, CAN_BE_DEKU),
+            CHECK(RC_WOODFALL_TEMPLE_PRE_BOSS_FREESTANDING_RUPEE_04, CAN_BE_DEKU),
+            CHECK(RC_WOODFALL_TEMPLE_PRE_BOSS_FREESTANDING_RUPEE_05, CAN_BE_DEKU && HAS_ITEM(ITEM_BOW)),
+            CHECK(RC_WOODFALL_TEMPLE_PRE_BOSS_FREESTANDING_RUPEE_06, CAN_BE_DEKU && CAN_BE_ZORA),
         },
         .exits = { //     TO                                         FROM
             EXIT(ENTRANCE(ODOLWAS_LAIR, 0),                          ONE_WAY_EXIT, CAN_BE_DEKU && HAS_ITEM(ITEM_BOW) && CHECK_DUNGEON_ITEM(DUNGEON_BOSS_KEY, DUNGEON_INDEX_WOODFALL_TEMPLE)),
