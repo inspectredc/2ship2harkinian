@@ -28,7 +28,6 @@ void Rando::ActorBehavior::InitEnDnhBehavior() {
             if (!RANDO_SAVE_CHECKS[RC_TOURIST_INFORMATION_PICTOBOX].obtained) {
                 return;
             } else {
-                // TODO!!
                 skipCmds.clear();
                 skipCmds.push_back(MSCRIPT_CMD_06);
                 skipCmds.push_back(MSCRIPT_CMD_07);
