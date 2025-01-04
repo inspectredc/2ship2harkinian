@@ -215,6 +215,10 @@ static RegisterShipInitFunc initFunc([]() {
         },
     };
     Regions[RR_TOURIST_INFORMATION] = RandoRegion{ .sceneId = SCENE_MAP_SHOP,
+        .checks = {
+            // Also requires poison to not be cleared
+            CHECK(RC_TOURIST_INFORMATION_PICTOBOX, CHECK_WEEKEVENTREG(WEEKEVENTREG_SAVED_KOUME)),
+        },
         .exits = { //     TO                                         FROM
             EXIT(ENTRANCE(SOUTHERN_SWAMP_POISONED, 1),      ENTRANCE(TOURIST_INFORMATION, 0), true),
         },
@@ -255,6 +259,9 @@ static RegisterShipInitFunc initFunc([]() {
     Regions[RR_WOODS_OF_MYSTERY] = RandoRegion{ .sceneId = SCENE_26SARUNOMORI,
         .exits = { //     TO                                         FROM
             EXIT(ENTRANCE(SOUTHERN_SWAMP_POISONED, 7),      ENTRANCE(WOODS_OF_MYSTERY, 0), true),
+        },
+        .events = {
+            EVENT_WEEKEVENTREG("Saved Koume", WEEKEVENTREG_SAVED_KOUME, HAS_ITEM(ITEM_POTION_RED) || HAS_ITEM(ITEM_POTION_BLUE)),
         },
     };
 }, {});

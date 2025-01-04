@@ -20,6 +20,7 @@ void InitEnBabaBehavior();
 void InitEnBalBehavior();
 void InitEnBoxBehavior();
 void InitEnCowBehavior();
+void InitEnDnhBehavior();
 void InitEnElfgrpBehavior();
 void InitEnElforgBehavior();
 void InitEnFsnBehavior();
