@@ -323,6 +323,7 @@ static RegisterShipInitFunc initFunc([]() {
     Regions[RR_TOURIST_INFORMATION] = RandoRegion{ .sceneId = SCENE_MAP_SHOP,
         .checks = {
             // Also requires poison to not be cleared
+            CHECK(RC_TOURIST_INFORMATION_ARCHERY, CHECK_WEEKEVENTREG(WEEKEVENTREG_SAVED_KOUME) && CHECK_WEEKEVENTREG(WEEKEVENTREG_CLEARED_WOODFALL_TEMPLE)),
             CHECK(RC_TOURIST_INFORMATION_PICTOBOX, CHECK_WEEKEVENTREG(WEEKEVENTREG_SAVED_KOUME)),
         },
         .exits = { //     TO                                         FROM
