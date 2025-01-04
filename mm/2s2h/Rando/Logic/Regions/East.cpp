@@ -159,6 +159,7 @@ static RegisterShipInitFunc initFunc([]() {
             CONNECTION(RR_IKANA_CANYON_LOWER, true),
         },
         .events = {
+            EVENT_ACCESS(RANDO_ACCESS_TINGLE_PICTURE, HAS_ITEM(ITEM_PICTOGRAPH_BOX)),
             EVENT_OWL_WARP(OWL_WARP_IKANA_CANYON),
         },
         .oneWayEntrances = {

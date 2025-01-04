@@ -71,6 +71,7 @@ static RegisterShipInitFunc initFunc([]() {
             CONNECTION(RR_GREAT_BAY_COAST_FISHERMAN_GROTTO, true), // TODO: Grotto mapping
         },
         .events = {
+            EVENT_ACCESS(RANDO_ACCESS_TINGLE_PICTURE, HAS_ITEM(ITEM_PICTOGRAPH_BOX)),
             EVENT_OWL_WARP(OWL_WARP_GREAT_BAY_COAST),
         },
         .oneWayEntrances = {

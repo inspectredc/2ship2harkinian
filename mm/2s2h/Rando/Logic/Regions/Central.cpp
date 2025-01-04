@@ -146,6 +146,7 @@ static RegisterShipInitFunc initFunc([]() {
             EXIT(ENTRANCE(DEKU_SCRUB_PLAYGROUND, 0),        ENTRANCE(NORTH_CLOCK_TOWN, 4), CAN_BE_DEKU),
         },
         .events = {
+            EVENT_ACCESS(RANDO_ACCESS_TINGLE_PICTURE, HAS_ITEM(ITEM_PICTOGRAPH_BOX)), // Only in the day
             EVENT_WEEKEVENTREG("Save Bomb Shop lady", WEEKEVENTREG_RECOVERED_STOLEN_BOMB_BAG, CAN_USE_SWORD || CAN_BE_ZORA || CAN_BE_GORON),
         },
     };

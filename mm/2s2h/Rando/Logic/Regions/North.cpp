@@ -215,6 +215,9 @@ static RegisterShipInitFunc initFunc([]() {
         .connections = {
             CONNECTION(RR_PATH_TO_GORON_VILLAGE_RAMP_GROTTO, CAN_USE_EXPLOSIVE), // TODO: Grotto mapping
         },
+        .events = {
+            EVENT_ACCESS(RANDO_ACCESS_TINGLE_PICTURE, HAS_ITEM(ITEM_PICTOGRAPH_BOX)),
+        },
     };
     Regions[RR_PATH_TO_MOUNTAIN_VILLAGE_LOWER] = RandoRegion{ .name = "Lower", .sceneId = SCENE_13HUBUKINOMITI,
         .exits = { //     TO                                         FROM

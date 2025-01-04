@@ -32,6 +32,7 @@ static RegisterShipInitFunc initFunc([]() {
             EXIT(ENTRANCE(DEKU_PALACE, 2),                  ENTRANCE(DEKU_KINGS_CHAMBER, 0), true),
         },
         .events = {
+            EVENT_ACCESS(RANDO_ACCESS_DEKU_KING_PICTURE, HAS_ITEM(ITEM_PICTOGRAPH_BOX) && CAN_BE_DEKU),
             EVENT_WEEKEVENTREG("Return Deku Princess", WEEKEVENTREG_23_20, HAS_BOTTLE && CAN_ACCESS(DEKU_PRINCESS)),
         }
     };
@@ -190,6 +191,7 @@ static RegisterShipInitFunc initFunc([]() {
             EXIT(ENTRANCE(GORMAN_TRACK, 0),                 ENTRANCE(MILK_ROAD, 3), true),
         },
         .events = {
+            EVENT_ACCESS(RANDO_ACCESS_TINGLE_PICTURE, HAS_ITEM(ITEM_PICTOGRAPH_BOX)),
             EVENT_OWL_WARP(OWL_WARP_MILK_ROAD),
         },
         .oneWayEntrances = {
@@ -235,6 +237,7 @@ static RegisterShipInitFunc initFunc([]() {
         },
         .events = {
             EVENT_ACCESS(RANDO_ACCESS_SPRING_WATER, true),
+            EVENT_ACCESS(RANDO_ACCESS_TINGLE_PICTURE, HAS_ITEM(ITEM_PICTOGRAPH_BOX)),
         },
     };
     Regions[RR_ROMANI_RANCH] = RandoRegion{ .sceneId = SCENE_F01,
@@ -322,6 +325,9 @@ static RegisterShipInitFunc initFunc([]() {
         },
     };
     Regions[RR_TOURIST_INFORMATION] = RandoRegion{ .sceneId = SCENE_MAP_SHOP,
+        .checks = {
+            CHECK(RC_TOURIST_INFORMATION_PHOTO, CAN_ACCESS(TINGLE_PICTURE) || CAN_ACCESS(DEKU_KING_PICTURE)),
+        },
         .exits = { //     TO                                         FROM
             EXIT(ENTRANCE(SOUTHERN_SWAMP_POISONED, 1),      ENTRANCE(TOURIST_INFORMATION, 0), true),
         },
