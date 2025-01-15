@@ -54,4 +54,3 @@ void Rando::ActorBehavior::InitEnDnhBehavior() {
         }
     });
 }
-
