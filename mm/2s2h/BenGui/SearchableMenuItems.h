@@ -2,6 +2,7 @@
 #include "2s2h/DeveloperTools/DeveloperTools.h"
 #include "2s2h/Enhancements/GfxPatcher/AuthenticGfxPatches.h"
 #include "2s2h/Rando/Rando.h"
+#include "2s2h/Enhancements/Trackers/DisplayOverlay.h"
 #include "UIWidgets.hpp"
 #include "BenMenuBar.h"
 #include "Notification.h"
@@ -439,6 +440,17 @@ static const std::unordered_map<int32_t, const char*> dekuGuardSearchBallsOption
     { DEKU_GUARD_SEARCH_BALLS_ALWAYS, "Always" },
 };
 
+static const std::unordered_map<int32_t, const char*> skipGetItemCutscenesOptions = {
+    { 0, "Never" },
+    { 1, "Junk Items Only" },
+    { 2, "Everything But Major" },
+    { 3, "Always" },
+};
+
+static const std::unordered_map<int32_t, const char*> damageMultiplierOptions = {
+    { 0, "1x" }, { 1, "2x" }, { 2, "4x" }, { 3, "8x" }, { 4, "16x" }, { 10, "1 Hit KO" },
+};
+
 void FreeLookPitchMinMax() {
     f32 maxY = CVarGetFloat("gEnhancements.Camera.FreeLook.MaxPitch", 72.0f);
     f32 minY = CVarGetFloat("gEnhancements.Camera.FreeLook.MinPitch", -49.0f);
@@ -731,52 +743,96 @@ void AddSettings() {
                 WIDGET_CVAR_COMBOBOX,
                 { .comboBoxOptions = textureFilteringMap } } } } });
     // Input Editor
-    settingsSidebar.push_back({ "Input Editor",
-                                1,
-                                { { { "Popout Input Editor",
-                                      "gWindows.BenInputEditor",
-                                      "Enables the separate Input Editor window.",
-                                      WIDGET_WINDOW_BUTTON,
-                                      { .size = UIWidgets::Sizes::Inline, .windowName = "2S2H Input Editor" } } } } });
+    settingsSidebar.push_back(
+        { "Controls",
+          1,
+          { { {
+                  "Simulated Input Lag: %d frames",
+                  CVAR_SIMULATED_INPUT_LAG,
+                  "Buffers your inputs to be executed a specified amount of frames later",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 0, 6, 0 },
+              },
+              { .widgetName =
+                    "This interface can be a little daunting. Please bear with us as we work to improve the experience "
+                    "and address some known issues.\n"
+                    "\n"
+                    "At first glance, you may notice several input devices displayed below the 'Clear All' button. "
+                    "Some of these might be other controllers connected to your computer, while others may be "
+                    "duplicated controllers (a known issue). We recommend clicking on the box with the " ICON_FA_EYE
+                    " icon and the name of any disconnected or unused controllers to hide their inputs. Make sure the "
+                    "target controller remains visible.\n"
+                    "\n"
+                    "If you encounter issues connecting your controller or registering inputs, try closing Steam or "
+                    "any other external input software. Alternatively, test a different controller to determine if "
+                    "it's a compatibility issue.\n",
+                .widgetType = WIDGET_TEXT },
+              { .widgetName = "Bindings", .widgetType = WIDGET_SEPARATOR_TEXT },
+              { "Popout Bindings Window",
+                "gWindows.BenInputEditor",
+                "Enables the separate Input Editor window.",
+                WIDGET_WINDOW_BUTTON,
+                { .size = UIWidgets::Sizes::Inline, .windowName = "2S2H Input Editor" } } } } });
 
     settingsSidebar.push_back(
-        { "Notifications",
-          1,
+        { "Overlay",
+          2,
           { {
-              { "Position",
-                "gNotifications.Position",
-                "Which corner of the screen notifications appear in.",
-                WIDGET_CVAR_COMBOBOX,
-                { .defaultVariant = 3, .comboBoxOptions = notificationPosition } },
-              { "Duration: %.0f seconds",
-                "gNotifications.Duration",
-                "How long notifications are displayed for.",
-                WIDGET_CVAR_SLIDER_FLOAT,
-                { .min = 3.0f, .max = 30.0f, .defaultVariant = 10.0f, .format = "%.1f", .step = 0.1f } },
-              { "Background Opacity: %.0f%%",
-                "gNotifications.BgOpacity",
-                "How opaque the background of notifications is.",
-                WIDGET_CVAR_SLIDER_FLOAT,
-                { .min = 0.0f, .max = 1.0f, .defaultVariant = 0.5f, .format = "%.0f%%", .isPercentage = true } },
-              { "Size %.1f",
-                "gNotifications.Size",
-                "How large notifications are.",
-                WIDGET_CVAR_SLIDER_FLOAT,
-                { .min = 1.0f, .max = 5.0f, .defaultVariant = 1.8f, .format = "%.1f", .step = 0.1f } },
-              { "Test Notification",
-                "",
-                "Displays a test notification.",
-                WIDGET_BUTTON,
-                {},
-                [](widgetInfo& info) {
-                    Notification::Emit({
-                        .itemIcon = "__OTR__icon_item_24_static_yar/gQuestIconGoldSkulltulaTex",
-                        .prefix = "This",
-                        .message = "is a",
-                        .suffix = "test.",
-                    });
-                } },
-          } } });
+                { .widgetName = "Notifications", .widgetType = WIDGET_SEPARATOR_TEXT },
+                { "Position",
+                  "gNotifications.Position",
+                  "Which corner of the screen notifications appear in.",
+                  WIDGET_CVAR_COMBOBOX,
+                  { .defaultVariant = 3, .comboBoxOptions = notificationPosition } },
+                { "Duration: %.0f seconds",
+                  "gNotifications.Duration",
+                  "How long notifications are displayed for.",
+                  WIDGET_CVAR_SLIDER_FLOAT,
+                  { .min = 3.0f, .max = 30.0f, .defaultVariant = 10.0f, .format = "%.1f", .step = 0.1f } },
+                { "Background Opacity: %.0f%%",
+                  "gNotifications.BgOpacity",
+                  "How opaque the background of notifications is.",
+                  WIDGET_CVAR_SLIDER_FLOAT,
+                  { .min = 0.0f, .max = 1.0f, .defaultVariant = 0.5f, .format = "%.0f%%", .isPercentage = true } },
+                { "Size %.1f",
+                  "gNotifications.Size",
+                  "How large notifications are.",
+                  WIDGET_CVAR_SLIDER_FLOAT,
+                  { .min = 1.0f, .max = 5.0f, .defaultVariant = 1.8f, .format = "%.1f", .step = 0.1f } },
+                { "Test Notification",
+                  "",
+                  "Displays a test notification.",
+                  WIDGET_BUTTON,
+                  {},
+                  [](widgetInfo& info) {
+                      Notification::Emit({
+                          .itemIcon = "__OTR__icon_item_24_static_yar/gQuestIconGoldSkulltulaTex",
+                          .prefix = "This",
+                          .message = "is a",
+                          .suffix = "test.",
+                      });
+                  } },
+            },
+            {
+                { .widgetName = "In-Game Timer", .widgetType = WIDGET_SEPARATOR_TEXT },
+                { "Toggle Display Overlay",
+                  "gWindows.DisplayOverlay",
+                  "Toggles the Display Overlay window for In-game Timers.",
+                  WIDGET_WINDOW_BUTTON,
+                  { .size = UIWidgets::Sizes::Inline, .windowName = "Display Overlay" } },
+                { .widgetName = "Hide Window Background",
+                  .widgetCVar = "gDisplayOverlay.Background",
+                  .widgetTooltip = "Hides the background of the Display Overlay window.",
+                  .widgetType = WIDGET_CVAR_CHECKBOX,
+                  .widgetOptions = { .defaultVariant = false },
+                  .widgetCallback = [](widgetInfo& info) { DisplayOverlayInitSettings(); } },
+                { .widgetName = "Scale: %.0fx",
+                  .widgetCVar = "gDisplayOverlay.Scale",
+                  .widgetTooltip = "Adjust the Scale for the Display Overlay window.",
+                  .widgetType = WIDGET_CVAR_SLIDER_FLOAT,
+                  .widgetOptions = { .min = 1.0f, .max = 5.0f, .defaultVariant = 1.0f, .format = "%.1f", .step = 0.1f },
+                  .widgetCallback = [](widgetInfo& info) { DisplayOverlayInitSettings(); } },
+            } } });
 
     if (CVarGetInteger("gSettings.SidebarSearch", 0)) {
         settingsSidebar.insert(settingsSidebar.begin() + searchSidebarIndex, searchSidebarEntry);
@@ -968,7 +1024,7 @@ void AddEnhancements() {
                 "gEnhancements.Camera.RightStick.InvertYAxis",
                 "Inverts the Camera Y Axis",
                 WIDGET_CVAR_CHECKBOX,
-                {},
+                { .defaultVariant = true },
                 nullptr,
                 [](widgetInfo& info) {
                     if (disabledMap.at(DISABLE_FOR_CAMERAS_OFF).active) {
@@ -1022,6 +1078,9 @@ void AddEnhancements() {
               { "Infinite Rupees", "gCheats.InfiniteRupees", "Always have a full Wallet.", WIDGET_CVAR_CHECKBOX, {} },
               { "Infinite Consumables", "gCheats.InfiniteConsumables",
                 "Always have max Consumables, you must have collected the consumables first.", WIDGET_CVAR_CHECKBOX },
+              { "Easy Frame Advance", "gCheats.EasyFrameAdvance",
+                "Continue holding START button when unpausing to only advance a single frame and then re-pause",
+                WIDGET_CVAR_CHECKBOX },
               { "Longer Deku Flower Glide", "gCheats.LongerFlowerGlide",
                 "Allows Deku Link to glide longer, no longer dropping after a certain distance.",
                 WIDGET_CVAR_CHECKBOX },
@@ -1053,6 +1112,8 @@ void AddEnhancements() {
               { "Fast Deku Flower Launch", "gEnhancements.Player.FastFlowerLaunch",
                 "Speeds up the time it takes to be able to get maximum height from launching out of a deku flower",
                 WIDGET_CVAR_CHECKBOX },
+              { "Infinite Deku Hopping", "gEnhancements.Player.InfiniteDekuHopping",
+                "Allows Deku Link to hop indefinitely in water without drowning.", WIDGET_CVAR_CHECKBOX },
               { "Instant Putaway", "gEnhancements.Player.InstantPutaway",
                 "Allows Link to instantly puts away held item without waiting.", WIDGET_CVAR_CHECKBOX },
               { "Fierce Deity Putaway", "gEnhancements.Player.FierceDeityPutaway",
@@ -1066,39 +1127,6 @@ void AddEnhancements() {
                 "Speeds up the time it takes to push/pull various objects.", WIDGET_CVAR_CHECKBOX },
               { "Dpad Equips", "gEnhancements.Dpad.DpadEquips", "Allows you to equip items to your d-pad",
                 WIDGET_CVAR_CHECKBOX },
-              { "Always Win Doggy Race",
-                "gEnhancements.Minigames.AlwaysWinDoggyRace",
-                "Makes the Doggy Race easier to win.",
-                WIDGET_CVAR_COMBOBOX,
-                { .comboBoxOptions = alwaysWinDoggyraceOptions } },
-              { "Milk Run Reward Options",
-                "gEnhancements.Minigames.CremiaHugs",
-                "Choose what reward you get for winning the Milk Run minigame after the first time. \n"
-                "-Vanilla: Reward is Random\n"
-                "-Hug: Get the hugging cutscene\n"
-                "-Rupee: Get the rupee reward",
-                WIDGET_CVAR_COMBOBOX,
-                { .comboBoxOptions = cremiaRewardOptions } },
-              { "Skip Powder Keg Certification", "gEnhancements.Minigames.PowderKegCertification",
-                "Skips requiring to take the Powder Keg Test before being given the Certification.",
-                WIDGET_CVAR_CHECKBOX },
-              { "Cucco Shack Cucco Count",
-                "gEnhancements.Minigames.CuccoShackCuccoCount",
-                "Choose how many cuccos you need to raise to make Grog happy.",
-                WIDGET_CVAR_SLIDER_INT,
-                { 1, 10, 10 } },
-              { "Swordsman School Winning Score",
-                "gEnhancements.Minigames.SwordsmanSchoolScore",
-                "Sets the score required to win the Swordsman School.",
-                WIDGET_CVAR_SLIDER_INT,
-                { 1, 30, 30 } },
-              { "Malon Target Practice Winning Score",
-                "gEnhancements.Minigames.MalonTargetPractice",
-                "Sets the score required to win Malon's Target Practice.",
-                WIDGET_CVAR_SLIDER_INT,
-                { 1, 10, 10 } },
-              { "Skip Gorman Horse Race", "gEnhancements.Minigames.SkipHorseRace",
-                "Instantly win the Gorman Horse Race", WIDGET_CVAR_CHECKBOX },
               { "Fast Magic Arrow Equip Animation", "gEnhancements.Equipment.MagicArrowEquipSpeed",
                 "Removes the animation for equipping Magic Arrows.", WIDGET_CVAR_CHECKBOX },
               { "Instant Fin Boomerangs Recall", "gEnhancements.PlayerActions.InstantRecall",
@@ -1108,28 +1136,102 @@ void AddEnhancements() {
                 "Enables magic spin attacks for the Fierce Deity Sword and Great Fairy's Sword.",
                 WIDGET_CVAR_CHECKBOX },
               { "Better Picto Message", "gEnhancements.Equipment.BetterPictoMessage",
-                "Inform the player what target if any is being captured in the pictograph.", WIDGET_CVAR_CHECKBOX } },
-            { { .widgetName = "Modes", .widgetType = WIDGET_SEPARATOR_TEXT },
-              { "Play as Kafei", "gModes.PlayAsKafei", "Requires scene reload to take effect.", WIDGET_CVAR_CHECKBOX },
-              { "Hyrule Warriors Styled Link", "gModes.HyruleWarriorsStyledLink",
-                "When acquired, places the Keaton and Fierce Deity masks on Link similarly to how he wears them in "
-                "Hyrule Warriors",
+                "Inform the player what target if any is being captured in the pictograph.", WIDGET_CVAR_CHECKBOX },
+              { "Arrow Type Cycling", "gEnhancements.PlayerActions.ArrowCycle",
+                "While aiming the bow, use L to cycle between Normal, Fire, Ice and Light arrows.",
                 WIDGET_CVAR_CHECKBOX },
-              { "Time Moves when you Move", "gModes.TimeMovesWhenYouMove",
-                "Time only moves when Link is not standing still.", WIDGET_CVAR_CHECKBOX },
-              { "Mirrored World",
-                "gModes.MirroredWorld.Mode",
-                "Mirrors the world horizontally.",
-                WIDGET_CVAR_CHECKBOX,
-                {},
-                ([](widgetInfo& info) {
-                    if (CVarGetInteger("gModes.MirroredWorld.Mode", 0)) {
-                        CVarSetInteger("gModes.MirroredWorld.State", 1);
-                    } else {
-                        CVarClear("gModes.MirroredWorld.State");
-                    }
-                }) } },
+              { "Bombchu Drops", "gEnhancements.Equipment.ChuDrops",
+                "When a bomb drop is spawned, it has a 50% chance to be a bombchu instead.", WIDGET_CVAR_CHECKBOX } },
+            {
+                { .widgetName = "Modes", .widgetType = WIDGET_SEPARATOR_TEXT },
+                { "Play as Kafei", "gModes.PlayAsKafei", "Requires scene reload to take effect.",
+                  WIDGET_CVAR_CHECKBOX },
+                { "Hyrule Warriors Styled Link", "gModes.HyruleWarriorsStyledLink",
+                  "When acquired, places the Keaton and Fierce Deity masks on Link similarly to how he wears them in "
+                  "Hyrule Warriors",
+                  WIDGET_CVAR_CHECKBOX },
+                { "Time Moves when you Move", "gModes.TimeMovesWhenYouMove",
+                  "Time only moves when Link is not standing still.", WIDGET_CVAR_CHECKBOX },
+                { "Mirrored World",
+                  "gModes.MirroredWorld.Mode",
+                  "Mirrors the world horizontally.",
+                  WIDGET_CVAR_CHECKBOX,
+                  {},
+                  ([](widgetInfo& info) {
+                      if (CVarGetInteger("gModes.MirroredWorld.Mode", 0)) {
+                          CVarSetInteger("gModes.MirroredWorld.State", 1);
+                      } else {
+                          CVarClear("gModes.MirroredWorld.State");
+                      }
+                  }) },
+                { .widgetName = "Minigames", .widgetType = WIDGET_SEPARATOR_TEXT },
+                { "Always Win Doggy Race",
+                  "gEnhancements.Minigames.AlwaysWinDoggyRace",
+                  "Makes the Doggy Race easier to win.",
+                  WIDGET_CVAR_COMBOBOX,
+                  { .comboBoxOptions = alwaysWinDoggyraceOptions } },
+                { "Milk Run Reward Options",
+                  "gEnhancements.Minigames.CremiaHugs",
+                  "Choose what reward you get for winning the Milk Run minigame after the first time. \n"
+                  "-Vanilla: Reward is Random\n"
+                  "-Hug: Get the hugging cutscene\n"
+                  "-Rupee: Get the rupee reward",
+                  WIDGET_CVAR_COMBOBOX,
+                  { .comboBoxOptions = cremiaRewardOptions } },
+                { "Cucco Shack Cucco Count",
+                  "gEnhancements.Minigames.CuccoShackCuccoCount",
+                  "Choose how many cuccos you need to raise to make Grog happy.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1, 10, 10 } },
+                { "Swordsman School Winning Score",
+                  "gEnhancements.Minigames.SwordsmanSchoolScore",
+                  "Sets the score required to win the Swordsman School.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1, 30, 30 } },
+                { "Swamp Archery Perfect Score",
+                  "gEnhancements.Minigames.SwampArcheryScore",
+                  "Sets the score required to win the Swamp Archery minigame, if this is changed it also speeds up the "
+                  "final score counting.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1000, 2180, 2180 } },
+                { "Town Archery Perfect Score",
+                  "gEnhancements.Minigames.TownArcheryScore",
+                  "Sets the score required to win the Town Archery minigame. Reaching this score will end the "
+                  "minigame.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1, 50, 50 } },
+                { "Honey & Darling Day 1 (Bombchus)",
+                  "gEnhancements.Minigames.HoneyAndDarlingDay1",
+                  "Sets the score required to win the Honey & Darling minigame on Day 1.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1, 8, 8 } },
+                { "Honey & Darling Day 2 (Bombs)",
+                  "gEnhancements.Minigames.HoneyAndDarlingDay2",
+                  "Sets the score required to win the Honey & Darling minigame on Day 2.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1, 8, 8 } },
+                { "Honey & Darling Day 3 (Bow)",
+                  "gEnhancements.Minigames.HoneyAndDarlingDay3",
+                  "Sets the score required to win the Honey & Darling minigame on Day 3.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1, 16, 16 } },
+                { "Skip Powder Keg Certification", "gEnhancements.Minigames.PowderKegCertification",
+                  "Skips requiring to take the Powder Keg Test before being given the Certification.",
+                  WIDGET_CVAR_CHECKBOX },
+                { "Malon Target Practice Winning Score",
+                  "gEnhancements.Minigames.MalonTargetPractice",
+                  "Sets the score required to win Malon's Target Practice.",
+                  WIDGET_CVAR_SLIDER_INT,
+                  { 1, 10, 10 } },
+                { "Skip Gorman Horse Race", "gEnhancements.Minigames.SkipHorseRace",
+                  "Instantly win the Gorman Horse Race", WIDGET_CVAR_CHECKBOX },
+            },
             { { .widgetName = "Saving", .widgetType = WIDGET_SEPARATOR_TEXT },
+              { "3rd Save File Slot",
+                "gEnhancements.Saving.FileSlot3",
+                "Adds a 3rd file slot that can be used for saves",
+                WIDGET_CVAR_CHECKBOX,
+                { .defaultVariant = true } },
               { "Persistent Owl Saves", "gEnhancements.Saving.PersistentOwlSaves",
                 "Continuing a save will not remove the owl save. Playing Song of "
                 "Time, allowing the moon to crash or finishing the "
@@ -1307,7 +1409,12 @@ void AddEnhancements() {
                 "'A' on it in the mask menu.",
                 WIDGET_CVAR_CHECKBOX },
               { "No Blast Mask Cooldown", "gEnhancements.Masks.NoBlastMaskCooldown",
-                "Eliminates the Cooldown between Blast Mask usage.", WIDGET_CVAR_CHECKBOX } },
+                "Eliminates the Cooldown between Blast Mask usage.", WIDGET_CVAR_CHECKBOX },
+              { "Goron Rolling Ignores Magic", "gEnhancements.Masks.GoronRollingIgnoresMagic",
+                "Goron rolling will use spikes even when Link doesn't have magic, and doesn't consume any.",
+                WIDGET_CVAR_CHECKBOX },
+              { "Goron Rolling Fast Spikes", "gEnhancements.Masks.GoronRollingFastSpikes",
+                "Speeds up the wind-up towards spiky rolling to be near instant.", WIDGET_CVAR_CHECKBOX } },
             // Song Enhancements
             { { .widgetName = "Ocarina", .widgetType = WIDGET_SEPARATOR_TEXT },
               { "Better Song of Double Time", "gEnhancements.Songs.BetterSongOfDoubleTime",
@@ -1369,8 +1476,11 @@ void AddEnhancements() {
               { "Skip Misc Interactions", "gEnhancements.Cutscenes.SkipMiscInteractions",
                 "Disclaimer: This doesn't do much yet, we will be progressively adding more skips over time.",
                 WIDGET_CVAR_CHECKBOX },
-              { "Skip Item Get Cutscene", "gEnhancements.Cutscenes.SkipGetItemCutscenes",
-                "Note: This only works in Randomizer currently", WIDGET_CVAR_CHECKBOX } },
+              { "Skip Item Get Cutscene",
+                "gEnhancements.Cutscenes.SkipGetItemCutscenes",
+                "Note: This only works in Randomizer currently",
+                WIDGET_CVAR_COMBOBOX,
+                { .comboBoxOptions = skipGetItemCutscenesOptions } } },
             // Dialogue Enhancements
             { { .widgetName = "Dialogue", .widgetType = WIDGET_SEPARATOR_TEXT },
               { "Fast Bank Selection", "gEnhancements.Dialogue.FastBankSelection",
@@ -1379,6 +1489,17 @@ void AddEnhancements() {
                 WIDGET_CVAR_CHECKBOX },
               { "Fast Text", "gEnhancements.Dialogue.FastText",
                 "Speeds up text rendering, and enables holding of B progress to next message.",
+                WIDGET_CVAR_CHECKBOX } },
+            // Other
+            { { .widgetName = "Other", .widgetType = WIDGET_SEPARATOR_TEXT },
+              { "Swamp Boat Timesaver", "gEnhancements.Timesavers.SwampBoatSpeed",
+                "Pictograph Tour: Hold Z to speed up the boat. Archery: Score 20 points to unlock boat speed up for "
+                "future attempts. When reaching 20 points, you'll be automatically transported back to Koume, "
+                "completing the minigame.",
+                WIDGET_CVAR_CHECKBOX },
+              { "Shooting Gallery Both Rewards", "gEnhancements.Timesavers.GalleryTwofer",
+                "When getting a perfect score at the Shooting Gallery, receive both rewards back to back "
+                "instead of having to play twice.",
                 WIDGET_CVAR_CHECKBOX } } } });
     enhancementsSidebar.push_back(
         { "Fixes",
@@ -1438,24 +1559,42 @@ void AddEnhancements() {
         { "Difficulty Options",
           3,
           { {
-              { "Disable Takkuri Steal", "gEnhancements.Cheats.DisableTakkuriSteal",
-                "Prevents the Takkuri from stealing key items like bottles and swords. It may still steal other items.",
-                WIDGET_CVAR_CHECKBOX },
-              { "Deku Guard Search Balls",
-                "gEnhancements.Cheats.DekuGuardSearchBalls",
-                "Choose when to show the Deku Palace Guards' search balls\n"
-                "- Never: Never show the search balls. This matches Majora's Mask 3D behaviour\n"
-                "- Night Only: Only show the search balls at night. This matches original N64 behaviour.\n"
-                "- Always: Always show the search balls.",
-                WIDGET_CVAR_COMBOBOX,
-                { .defaultVariant = DEKU_GUARD_SEARCH_BALLS_NIGHT_ONLY,
-                  .comboBoxOptions = dekuGuardSearchBallsOptions } },
-              { "Lower Bank Reward Thresholds", "gEnhancements.DifficultyOptions.LowerBankRewardThresholds",
-                "Reduces the amount of rupees required to receive the rewards from the bank.\n"
-                "From: 200 -> 1000 -> 5000\n"
-                "To:   100 ->  500 -> 1000",
-                WIDGET_CVAR_CHECKBOX },
-          } } });
+                { "Disable Takkuri Steal", "gEnhancements.Cheats.DisableTakkuriSteal",
+                  "Prevents the Takkuri from stealing key items like bottles and swords. It may still steal other "
+                  "items.",
+                  WIDGET_CVAR_CHECKBOX },
+                { "Deku Guard Search Balls",
+                  "gEnhancements.Cheats.DekuGuardSearchBalls",
+                  "Choose when to show the Deku Palace Guards' search balls\n"
+                  "- Never: Never show the search balls. This matches Majora's Mask 3D behaviour\n"
+                  "- Night Only: Only show the search balls at night. This matches original N64 behaviour.\n"
+                  "- Always: Always show the search balls.",
+                  WIDGET_CVAR_COMBOBOX,
+                  { .defaultVariant = DEKU_GUARD_SEARCH_BALLS_NIGHT_ONLY,
+                    .comboBoxOptions = dekuGuardSearchBallsOptions } },
+                { "Lower Bank Reward Thresholds", "gEnhancements.DifficultyOptions.LowerBankRewardThresholds",
+                  "Reduces the amount of rupees required to receive the rewards from the bank.\n"
+                  "From: 200 -> 1000 -> 5000\n"
+                  "To:   100 ->  500 -> 1000",
+                  WIDGET_CVAR_CHECKBOX },
+            },
+            {
+                {
+                    "Damage Multiplier",
+                    "gEnhancements.DifficultyOptions.DamageMultiplier",
+                    "Adjusts the amount of damage Link takes from all sources.",
+                    WIDGET_CVAR_COMBOBOX,
+                    { .comboBoxOptions = damageMultiplierOptions },
+                },
+                { "Permanent Heart Loss", "gEnhancements.DifficultyOptions.PermanentHeartLoss",
+                  "When you lose 4 quarters of a heart you will permanently lose that heart container.\n\nDisabling "
+                  "this after the fact will not restore any received heart containers.",
+                  WIDGET_CVAR_CHECKBOX },
+                { "Delete File on Death", "gEnhancements.DifficultyOptions.DeleteFileOnDeath",
+                  "Dying will delete your file\n\n     " ICON_FA_EXCLAMATION_TRIANGLE
+                  " WARNING " ICON_FA_EXCLAMATION_TRIANGLE "\nTHIS IS NOT REVERSABLE\nUSE AT YOUR OWN RISK!",
+                  WIDGET_CVAR_CHECKBOX },
+            } } });
     enhancementsSidebar.push_back({ "HUD Editor",
                                     1,
                                     { // HUD Editor
@@ -1821,7 +1960,7 @@ void SearchMenuGetItem(widgetInfo& widget) {
                 break;
             case WIDGET_TEXT:
                 ImGui::AlignTextToFramePadding();
-                ImGui::Text(widget.widgetName.c_str());
+                ImGui::TextWrapped(widget.widgetName.c_str());
                 break;
             case WIDGET_COMBOBOX: {
                 int32_t* pointer = std::get<int32_t*>(widget.widgetOptions.valuePointer);
