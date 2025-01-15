@@ -12,13 +12,13 @@
 #include "assets/interface/parameter_static/parameter_static.h"
 #include "assets/archives/icon_item_24_static/icon_item_24_static_yar.h"
 #include "assets/archives/schedule_dma_static/schedule_dma_static_yar.h"
+#include "assets/interface/icon_item_dungeon_static/icon_item_dungeon_static.h"
 #include "assets/interface/icon_item_field_static/icon_item_field_static.h"
 
 extern "C" {
 #include "z64.h"
 #include "functions.h"
 #include "macros.h"
-#include "z64.h"
 
 extern float OTRGetAspectRatio();
 
@@ -43,11 +43,25 @@ std::unordered_map<s16, const char*> sceneNames = {
 #undef DEFINE_SCENE_UNSET
 
 // These textures are not in existing lists that we iterate over.
-std::vector<const char*> miscellaneousTextures = { gRupeeCounterIconTex,       gStrayFairyGreatBayIconTex,
-                                                   gQuestIconGoldSkulltulaTex, gWorldMapOwlFaceTex,
-                                                   gChestTrackerIcon,          gPotTrackerIcon,
-                                                   gArcheryScoreIconTex,       gBarrelTrackerIcon,
-                                                   gCrateTrackerIcon,          gTimerClockIconTex };
+std::vector<const char*> miscellaneousTextures = {
+    gArcheryScoreIconTex,
+    gBarrelTrackerIcon,
+    gChestTrackerIcon,
+    gCrateTrackerIcon,
+    gDungeonStrayFairyGreatBayIconTex,
+    gDungeonStrayFairySnowheadIconTex,
+    gDungeonStrayFairyStoneTowerIconTex,
+    gDungeonStrayFairyWoodfallIconTex,
+    gPotTrackerIcon,
+    gQuestIconGoldSkulltulaTex,
+    gRupeeCounterIconTex,
+    gStrayFairyGreatBayIconTex,
+    gStrayFairySnowheadIconTex,
+    gStrayFairyStoneTowerIconTex,
+    gStrayFairyWoodfallIconTex,
+    gTimerClockIconTex,
+    gWorldMapOwlFaceTex,
+};
 
 std::vector<const char*> digitList = { gCounterDigit0Tex, gCounterDigit1Tex, gCounterDigit2Tex, gCounterDigit3Tex,
                                        gCounterDigit4Tex, gCounterDigit5Tex, gCounterDigit6Tex, gCounterDigit7Tex,

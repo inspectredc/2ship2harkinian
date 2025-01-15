@@ -7,10 +7,10 @@
 #include "build.h"
 
 // TODO: This block should come from elsewhere, tied to data in Rando::StaticData::Options
-std::vector<std::string> logicOptions = { "No Logic", "Vanilla", "Glitchless" };
+std::vector<std::string> logicOptions = { "Glitchless", "No Logic", "French Vanilla", "Vanilla" };
 
 namespace BenGui {
-extern std::shared_ptr<Rando::CheckTracker::Window> mRandoCheckTrackerWindow;
+extern std::shared_ptr<Rando::CheckTracker::CheckTrackerWindow> mRandoCheckTrackerWindow;
 extern std::shared_ptr<Rando::CheckTracker::SettingsWindow> mRandoCheckTrackerSettingsWindow;
 } // namespace BenGui
 
@@ -20,6 +20,7 @@ extern "C" {
 
 void Rando::DrawMenu() {
     ImGui::BeginChild("randoSettings", ImVec2(ImGui::GetContentRegionAvail().x / 2, 0));
+    ImGui::SeparatorText("Seed Generation");
     UIWidgets::CVarCheckbox("Enable Rando (Randomizes new files upon creation)", "gRando.Enabled");
 
     if (UIWidgets::CVarCombobox("Seed", "gRando.SpoilerFileIndex", Rando::Spoiler::spoilerOptions)) {
@@ -49,7 +50,16 @@ void Rando::DrawMenu() {
 
         UIWidgets::CVarCheckbox("Generate Spoiler File", "gRando.GenerateSpoiler");
 
-        UIWidgets::CVarCombobox("Logic", Rando::StaticData::Options[RO_LOGIC].cvar, logicOptions);
+        UIWidgets::CVarCombobox(
+            "Logic", Rando::StaticData::Options[RO_LOGIC].cvar, logicOptions,
+            { .tooltip =
+                  "Glitchless - The items are shuffled in a way that guarantees the seed is beatable without "
+                  "glitches\n\n"
+                  "No Logic - The items are shuffled completely randomly, this can result in unbeatable seeds, and "
+                  "will require heavy use of glitches\n\n"
+                  "French Vanilla - This is an alternative variant to Glitchless, but the items are biased to be "
+                  "closer to their vanilla locations. Tends to be an more beginner friendly experience.\n\n"
+                  "Vanilla - The items are not shuffled." });
 
         if (CVarGetInteger(Rando::StaticData::Options[RO_LOGIC].cvar, RO_LOGIC_NO_LOGIC) != RO_LOGIC_VANILLA) {
             UIWidgets::CVarCheckbox("Shuffle Gold Skulltula Tokens",
@@ -60,14 +70,17 @@ void Rando::DrawMenu() {
                 "This will shuffle freestanding rupees and drops from pots, crates, etc. Not everything is covered "
                 "here yet, consult the check tracker for more detailed information.");
             UIWidgets::CVarCheckbox("Shuffle Shops", Rando::StaticData::Options[RO_SHUFFLE_SHOPS].cvar);
-            UIWidgets::CVarCheckbox("Container Style Matches Contents", "gRando.CSMC");
-            UIWidgets::Tooltip("Currently this is fairly limited, will be expanded upon soon");
+            UIWidgets::CVarCheckbox("Shuffle Boss Remains", Rando::StaticData::Options[RO_SHUFFLE_BOSS_REMAINS].cvar);
         }
     }
+    ImGui::SeparatorText("Enhancements");
+    UIWidgets::CVarCheckbox("Container Style Matches Contents", "gRando.CSMC");
+    UIWidgets::Tooltip("This will make the contents of a container match the container itself. This currently only "
+                       "applies to chests and pots");
     UIWidgets::WindowButton("Check Tracker", "gWindows.CheckTracker", BenGui::mRandoCheckTrackerWindow,
-                            { .size = ImVec2((ImGui::GetContentRegionAvail().x - 48.0f), 32.0f) });
+                            { .size = ImVec2((ImGui::GetContentRegionAvail().x - 48.0f), 40.0f) });
     ImGui::SameLine();
-    if (UIWidgets::Button(ICON_FA_COG, { .size = ImVec2(32.0f, 32.0f) })) {
+    if (UIWidgets::Button(ICON_FA_COG, { .size = ImVec2(40.0f, 40.0f) })) {
         BenGui::mRandoCheckTrackerSettingsWindow->ToggleVisibility();
     }
     ImGui::EndChild();

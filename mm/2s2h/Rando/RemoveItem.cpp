@@ -152,10 +152,111 @@ void Rando::RemoveItem(RandoItemId randoItemId) {
         case RI_OWL_ZORA_CAPE:
             CLEAR_OWL_WARP(OWL_WARP_ZORA_CAPE);
             break;
+        case RI_TINGLE_MAP_CLOCK_TOWN:
+            CLEAR_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_CLOCK_TOWN);
+            break;
+        case RI_TINGLE_MAP_WOODFALL:
+            CLEAR_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_WOODFALL);
+            break;
+        case RI_TINGLE_MAP_SNOWHEAD:
+            CLEAR_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_SNOWHEAD);
+            break;
+        case RI_TINGLE_MAP_ROMANI_RANCH:
+            CLEAR_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_ROMANI_RANCH);
+            break;
+        case RI_TINGLE_MAP_GREAT_BAY:
+            CLEAR_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_GREAT_BAY);
+            break;
+        case RI_TINGLE_MAP_STONE_TOWER:
+            CLEAR_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_STONE_TOWER);
+            break;
+        case RI_HEART_CONTAINER:
+            gSaveContext.save.saveInfo.playerData.healthCapacity -= 0x10;
+            gSaveContext.save.saveInfo.playerData.health =
+                MIN(gSaveContext.save.saveInfo.playerData.health, gSaveContext.save.saveInfo.playerData.healthCapacity);
+            break;
+        case RI_HEART_PIECE:
+            if (GET_QUEST_HEART_PIECE_COUNT == 0) {
+                INCREMENT_QUEST_HEART_PIECE_COUNT;
+                INCREMENT_QUEST_HEART_PIECE_COUNT;
+                INCREMENT_QUEST_HEART_PIECE_COUNT;
+                gSaveContext.save.saveInfo.playerData.healthCapacity -= 0x10;
+                gSaveContext.save.saveInfo.playerData.health = MIN(
+                    gSaveContext.save.saveInfo.playerData.health, gSaveContext.save.saveInfo.playerData.healthCapacity);
+            } else {
+                DECREMENT_QUEST_HEART_PIECE_COUNT;
+            }
+            break;
+        case RI_BOMBERS_NOTEBOOK:
+            REMOVE_QUEST_ITEM(QUEST_BOMBERS_NOTEBOOK);
+            break;
+        case RI_SONG_ELEGY:
+            REMOVE_QUEST_ITEM(QUEST_SONG_ELEGY);
+            break;
+        case RI_SONG_EPONA:
+            REMOVE_QUEST_ITEM(QUEST_SONG_EPONA);
+            break;
+        case RI_SONG_HEALING:
+            REMOVE_QUEST_ITEM(QUEST_SONG_HEALING);
+            break;
+        case RI_SONG_LULLABY_INTRO:
+            REMOVE_QUEST_ITEM(QUEST_SONG_LULLABY_INTRO);
+            break;
+        case RI_SONG_LULLABY:
+            REMOVE_QUEST_ITEM(QUEST_SONG_LULLABY);
+            break;
+        case RI_SONG_NOVA:
+            REMOVE_QUEST_ITEM(QUEST_SONG_BOSSA_NOVA);
+            break;
+        case RI_SONG_OATH:
+            REMOVE_QUEST_ITEM(QUEST_SONG_OATH);
+            break;
+        case RI_SONG_SARIA:
+            REMOVE_QUEST_ITEM(QUEST_SONG_SARIA);
+            break;
+        case RI_SONG_SOARING:
+            REMOVE_QUEST_ITEM(QUEST_SONG_SOARING);
+            break;
+        case RI_SONG_SONATA:
+            REMOVE_QUEST_ITEM(QUEST_SONG_SONATA);
+            break;
+        case RI_SONG_STORMS:
+            REMOVE_QUEST_ITEM(QUEST_SONG_STORMS);
+            break;
+        case RI_SONG_SUN:
+            REMOVE_QUEST_ITEM(QUEST_SONG_SUN);
+            break;
+        case RI_SONG_TIME:
+            REMOVE_QUEST_ITEM(QUEST_SONG_TIME);
+            break;
+        case RI_REMAINS_GOHT:
+            REMOVE_QUEST_ITEM(QUEST_REMAINS_GOHT);
+            break;
+        case RI_REMAINS_GYORG:
+            REMOVE_QUEST_ITEM(QUEST_REMAINS_GYORG);
+            break;
+        case RI_REMAINS_ODOLWA:
+            REMOVE_QUEST_ITEM(QUEST_REMAINS_ODOLWA);
+            break;
+        case RI_REMAINS_TWINMOLD:
+            REMOVE_QUEST_ITEM(QUEST_REMAINS_TWINMOLD);
+            break;
+        // Ignore Ammo
+        case RI_BOMBCHU:
+        case RI_DEKU_STICK:
+        case RI_DEKU_NUT:
+        case RI_MILK_REFILL:
+        case RI_RED_POTION_REFILL:
+        case RI_GREEN_POTION_REFILL:
+        case RI_BLUE_POTION_REFILL:
+        case RI_FAIRY_REFILL:
+        case RI_GOLD_DUST_REFILL:
+            break;
         default:
-            // TODO: Handle equipment
-            Inventory_DeleteItem(Rando::StaticData::Items[randoItemId].itemId,
-                                 SLOT(Rando::StaticData::Items[randoItemId].itemId));
+            if (Rando::StaticData::Items[randoItemId].itemId < 77) {
+                Inventory_DeleteItem(Rando::StaticData::Items[randoItemId].itemId,
+                                     SLOT(Rando::StaticData::Items[randoItemId].itemId));
+            }
             break;
     }
 }

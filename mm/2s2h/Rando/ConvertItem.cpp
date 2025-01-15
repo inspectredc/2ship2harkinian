@@ -61,10 +61,10 @@ static std::vector<RandoItemId> junkItems = {
     RI_RUPEE_PURPLE,
     // Ammo
     RI_ARROWS_10,
-    RI_BOMBCHU,
+    RI_BOMBCHU_5,
     RI_BOMBS_5,
-    RI_DEKU_NUT,
-    RI_DEKU_STICK,
+    RI_DEKU_NUTS_5,
+    RI_DEKU_STICKS_5,
     // Refill
     RI_RED_POTION_REFILL,
     RI_GREEN_POTION_REFILL,
@@ -79,7 +79,7 @@ static std::vector<RandoItemId> junkItems = {
 RandoItemId Rando::CurrentJunkItem() {
     static RandoItemId lastJunkItem = RI_UNKNOWN;
     static u32 lastChosenAt = 0;
-    if (gPlayState != NULL && ABS(gPlayState->gameplayFrames - lastChosenAt) > 10) {
+    if (gPlayState != NULL && ABS(gPlayState->gameplayFrames - lastChosenAt) > 15) {
         lastChosenAt = gPlayState->gameplayFrames;
         lastJunkItem = RI_UNKNOWN;
     }
@@ -199,6 +199,13 @@ bool Rando::IsItemObtainable(RandoItemId randoItemId, RandoCheckId randoCheckId)
                 return false;
             }
             break;
+        case RI_PROGRESSIVE_LULLABY:
+            if (hasObtainedCheck) {
+                return false;
+            } else if (CHECK_QUEST_ITEM(QUEST_SONG_LULLABY_INTRO) && CHECK_QUEST_ITEM(QUEST_SONG_LULLABY)) {
+                return false;
+            }
+            return true;
         case RI_PROGRESSIVE_MAGIC:
             if (hasObtainedCheck) {
                 return false;
@@ -238,6 +245,7 @@ bool Rando::IsItemObtainable(RandoItemId randoItemId, RandoCheckId randoCheckId)
             break;
         case RI_GOLD_DUST_REFILL:
         case RI_MILK_REFILL:
+        case RI_CHATEAU_ROMANI_REFILL:
         case RI_FAIRY_REFILL:
         case RI_RED_POTION_REFILL:
         case RI_BLUE_POTION_REFILL:
@@ -273,6 +281,7 @@ bool Rando::IsItemObtainable(RandoItemId randoItemId, RandoCheckId randoCheckId)
             }
             break;
         case RI_BOTTLE_EMPTY:
+        case RI_BOTTLE_CHATEAU_ROMANI:
         case RI_BOTTLE_MILK:
         case RI_BOTTLE_GOLD_DUST:
             if (hasObtainedCheck) {
@@ -392,6 +401,18 @@ bool Rando::IsItemObtainable(RandoItemId randoItemId, RandoCheckId randoCheckId)
             return !CHECK_QUEST_ITEM(QUEST_SONG_SUN);
         case RI_SONG_TIME:
             return !CHECK_QUEST_ITEM(QUEST_SONG_TIME);
+        case RI_TINGLE_MAP_CLOCK_TOWN:
+            return !CHECK_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_CLOCK_TOWN);
+        case RI_TINGLE_MAP_WOODFALL:
+            return !CHECK_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_WOODFALL);
+        case RI_TINGLE_MAP_GREAT_BAY:
+            return !CHECK_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_GREAT_BAY);
+        case RI_TINGLE_MAP_ROMANI_RANCH:
+            return !CHECK_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_ROMANI_RANCH);
+        case RI_TINGLE_MAP_SNOWHEAD:
+            return !CHECK_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_SNOWHEAD);
+        case RI_TINGLE_MAP_STONE_TOWER:
+            return !CHECK_WEEKEVENTREG(WEEKEVENTREG_TINGLE_MAP_BOUGHT_STONE_TOWER);
         // These items are technically fine to receive again because they don't do anything, but we'll convert them to
         // ensure it's clear to the player something didn't go wrong. We just simply check the inventory state
         // Masks
@@ -400,6 +421,7 @@ bool Rando::IsItemObtainable(RandoItemId randoItemId, RandoCheckId randoCheckId)
         case RI_MASK_BREMEN:
         case RI_MASK_BUNNY:
         case RI_MASK_CAPTAIN:
+        case RI_MASK_CIRCUS_LEADER:
         case RI_MASK_COUPLE:
         case RI_MASK_DEKU:
         case RI_MASK_DON_GERO:
@@ -411,6 +433,7 @@ bool Rando::IsItemObtainable(RandoItemId randoItemId, RandoCheckId randoCheckId)
         case RI_MASK_GREAT_FAIRY:
         case RI_MASK_KAFEIS_MASK:
         case RI_MASK_KAMARO:
+        case RI_MASK_KEATON:
         case RI_MASK_POSTMAN:
         case RI_MASK_ROMANI:
         case RI_MASK_SCENTS:
@@ -452,6 +475,17 @@ RandoItemId Rando::ConvertItem(RandoItemId randoItemId, RandoCheckId randoCheckI
                     return RI_QUIVER_40;
                 } else if (CUR_UPG_VALUE(UPG_QUIVER) == 2) {
                     return RI_QUIVER_50;
+                }
+                // Shouldn't happen, just in case
+                assert(false);
+                return RI_JUNK;
+            case RI_PROGRESSIVE_LULLABY:
+                if (!CHECK_QUEST_ITEM(QUEST_SONG_LULLABY_INTRO)) {
+                    return RI_SONG_LULLABY_INTRO;
+                } else {
+                    if (!CHECK_QUEST_ITEM(QUEST_SONG_LULLABY)) {
+                        return RI_SONG_LULLABY;
+                    }
                 }
                 // Shouldn't happen, just in case
                 assert(false);
@@ -501,6 +535,7 @@ RandoItemId Rando::ConvertItem(RandoItemId randoItemId, RandoCheckId randoCheckI
                 }
                 break;
             case RI_BOTTLE_MILK:
+            case RI_BOTTLE_CHATEAU_ROMANI:
                 if (Inventory_HasEmptyBottle()) {
                     return RI_MILK_REFILL;
                 }

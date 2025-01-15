@@ -16,15 +16,20 @@ std::unordered_map<RandoCheckId, std::string> readableCheckNamesForGs;
 #define FIRST_GS_MESSAGE 0x20D1
 #define SECOND_GS_MESSAGE 0x20C0
 
-s32 GetObtainedChecksAmount() {
+s32 GetNormalizedCost() {
     s32 obtainedChecks = 0;
+    s32 maxChecks = 0;
     for (auto& [randoCheckId, _] : Rando::StaticData::Checks) {
         RandoSaveCheck saveCheck = RANDO_SAVE_CHECKS[randoCheckId];
-        if (saveCheck.shuffled && saveCheck.obtained) {
-            obtainedChecks++;
+        if (saveCheck.shuffled) {
+            maxChecks++;
+            if (saveCheck.obtained) {
+                obtainedChecks++;
+            }
         }
     }
-    return obtainedChecks;
+
+    return MAX(10, MIN(500, 10 + (obtainedChecks * (500 - 10)) / (maxChecks)));
 }
 
 RandoCheckId GetRandomCheck(bool repeatableOnlyObtained = false) {
@@ -78,9 +83,9 @@ void Rando::ActorBehavior::InitEnGsBehavior() {
         entry.autoFormat = false;
         auto& saveCheck = RANDO_SAVE_CHECKS[randoCheckId];
 
-        entry.msg = "They say %g{{article}}{{item}}%w is hidden at %y{{location}}%w.\x11";
+        entry.msg = "They say %g{{article}}{{item}}%w is hidden at %y{{location}}%w.";
 
-        if (Rando::StaticData::Items[saveCheck.randoItemId].article != "") {
+        if (!Ship_IsCStringEmpty(Rando::StaticData::Items[saveCheck.randoItemId].article)) {
             CustomMessage::Replace(&entry.msg, "{{article}}",
                                    std::string(Rando::StaticData::Items[saveCheck.randoItemId].article) + " ");
         } else {
@@ -90,11 +95,14 @@ void Rando::ActorBehavior::InitEnGsBehavior() {
         CustomMessage::Replace(&entry.msg, "{{item}}", Rando::StaticData::Items[saveCheck.randoItemId].name);
         CustomMessage::Replace(&entry.msg, "{{location}}", readableCheckNamesForGs[randoCheckId]);
 
+        // Replace colors before line break calculation
+        CustomMessage::ReplaceColorChars(&entry.msg);
+
         CustomMessage::AddLineBreaks(&entry.msg);
 
         // Eventually this part should be opt-in, but for now it's always on
-        entry.msg += "\x13\x12...\x13\x12Trade %r{{rupees}} Rupees%w for another hint?\x11\xC2Yes\x11No";
-        s32 cost = MAX(10, MIN(500, GetObtainedChecksAmount() * 2));
+        entry.msg += "\x10...\x13\x12Trade %r{{rupees}} Rupees%w for another hint?\x11\xC2No\x11Yes";
+        s32 cost = GetNormalizedCost();
         CustomMessage::Replace(&entry.msg, "{{rupees}}", std::to_string(cost));
 
         CustomMessage::ReplaceColorChars(&entry.msg);
@@ -109,8 +117,8 @@ void Rando::ActorBehavior::InitEnGsBehavior() {
 
         auto entry = CustomMessage::LoadVanillaMessageTableEntry(*textId);
 
-        if (msgCtx->choiceIndex == 0) {
-            s32 cost = MAX(10, MIN(500, GetObtainedChecksAmount() * 2));
+        if (msgCtx->choiceIndex == 1) {
+            s32 cost = GetNormalizedCost();
 
             RandoCheckId randoCheckId = GetRandomCheck(true);
             if (gSaveContext.save.saveInfo.playerData.rupees < cost) {
@@ -122,7 +130,7 @@ void Rando::ActorBehavior::InitEnGsBehavior() {
 
                 entry.msg = "Wise choice... They say %g{{article}}{{item}}%w is hidden at %y{{location}}%w.";
 
-                if (Rando::StaticData::Items[saveCheck.randoItemId].article != "") {
+                if (!Ship_IsCStringEmpty(Rando::StaticData::Items[saveCheck.randoItemId].article)) {
                     CustomMessage::Replace(&entry.msg, "{{article}}",
                                            std::string(Rando::StaticData::Items[saveCheck.randoItemId].article) + " ");
                 } else {
