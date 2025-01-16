@@ -42,4 +42,3 @@ void Rando::ActorBehavior::InitEnShnBehavior() {
         }
     });
 }
-
